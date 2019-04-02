@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>Home</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.0.2/sockjs.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+</head>
+<body>
+
+	 <input id="source" type="text" class="controls" placeholder="Enter Text">
+	<button id="send" onclick="publish()">Send</button>
+
+	<script>
+
+	 var url = 'http://' + window.location.host + '/VehicleLocator/log-socket'
+      var sock = new SockJS(url);
+      var stomp = Stomp.over(sock);
+
+      stomp.connect({}, function(frame) {
+          console.log('*****  Connected  *****');
+          //stomp.subscribe("/topic/marco", handlePolo);
+         
+        });
+
+      function publish(){
+
+    	  var sourceElement = document.getElementById('source');
+
+          var source = sourceElement.value;
+    	  stomp.send("/app/publish", {}, source);
+       }
+      
+    
+      </script>
+
+	<div id="output"></div>
+</body>
+</html>

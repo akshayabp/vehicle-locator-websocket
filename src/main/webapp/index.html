@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<style type="text/css">
+html {
+	height: 100%
+}
+
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0
+}
+
+#mapDiv {
+	/* 	height: 80%; */
+	/* 	width: 60%; */
+	height: 400px;
+	width: 900px;
+}
+</style>
+
+<!-- Add the base url for your web server here,
+  e.g. http://localhost:8080/gmaps/pluralsight -->
+<base href="<ADD YOUR WEB SERVER BASE URL HERE">
+
+<!-- Obtain your Google Maps API key and add it here -->
+</!-->
+<script type="text/javascript"
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9v0fPwOS52ZJwO0dgGfu8u4oYQ-N7e8Y">
+</script>
+
+
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.0.2/sockjs.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+
+<script type="text/javascript">
+
+    var map;
+    var initialCenter;
+    var initialZoom;
+    var elevationService;
+    var geocoder;
+    var centerMarker;
+
+   
+
+    var markers = [];
+
+    var markersMap = {};
+    function init() {
+
+    	var url = 'http://' + window.location.host + '/vehicle-locator-websocket/log-socket'
+    	var sock = new SockJS(url);
+    	var stomp = Stomp.over(sock);
+
+    	stomp.connect({}, function(frame) {
+            console.log('*****  Connected  *****');
+            stomp.subscribe("/topic/logfeed", handleMessage);
+           
+          });
+
+        var mapOptions = {
+            zoom: 8,
+            center: new google.maps.LatLng(42.687110000000004,-73.84570000000001)
+        };
+
+
+
+        map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
+
+
+
+        function handleMessage(message) {
+            console.log("response: " + message.body);
+
+			var data = message.body;
+			var logData=JSON.parse(data);
+
+			var centerMarker = markersMap[logData.vehicle_id];
+
+            if(!centerMarker){
+                centerMarker = new google.maps.Marker({
+                    map: map,
+                    title: logData.vehicle_id
+                });
+
+                var infoWindow = new google.maps.InfoWindow({content:'Hello get marker content.'});
+
+                google.maps.event.addListener(centerMarker, 'click', function () {
+                    infoWindow.open(map, centerMarker);
+                });
+
+                markersMap[logData.vehicle_id] = centerMarker;
+                markers.push(centerMarker);
+            }
+
+            
+            var currentMarkerLatLng = {lat: logData.lat, lng: logData.long};
+
+            centerMarker.setPosition(currentMarkerLatLng);
+            
+        };
+
+    }
+    google.maps.event.addDomListener(window, "load", init);
+
+
+
+
+
+
+
+</script>
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+
+</head>
+<body>
+
+	<div class="container">
+
+		<div class="row">
+			<div class="span10">
+			
+				<div class="hero-unit">
+                    <h1>Vehicle Locator</h1>
+                    
+                    <p>
+                        <a class="btn btn-primary btn-large">Learn more</a>
+                    </p>
+                </div>
+				
+				<div id="mapDiv"></div>
+			
+			</div>
+
+
+			<div class="span2"></div>
+		</div>
+
+
+
+	</div>
+
+</body>
+</html>
