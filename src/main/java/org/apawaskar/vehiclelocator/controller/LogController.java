@@ -1,5 +1,8 @@
 package org.apawaskar.vehiclelocator.controller;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.apawaskar.vehiclelocator.services.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +21,10 @@ public class LogController {
 
 	@Autowired
 	Producer producer;
-
+		
 	@RequestMapping(value = "/log", method = RequestMethod.POST, consumes = "application/json")
 	public void submitLogs(@RequestBody String message) {
-		LOGGER.debug("Message recieved: " + message);
+		LOGGER.info("Message recieved: " + message);
 		producer.sendMessageTo("/topic/logfeed", message);
 	}
 }
